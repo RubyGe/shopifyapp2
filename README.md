@@ -1,19 +1,29 @@
 # Shopify app marketplace scrapper for the new marketplace
 
-DB structure:
+Database schema can be found in schema.sql file.
 
-TABLE: categories
-id serial PRIMARY KEY,
-name text,
-url text
+If you're running the scraper for the first time, make sure you first create the database and the tables:
 
-TABLE: sub_categories
-id serial PRIMARY KEY,
-category_id int REFERENCES categories,
-name varchar(255),
-url_slug text
+```
+createdb shopifyapp2
+psql shopifyapp2 < schema.sql
+```
 
-TABLE: app_listings
-id serial PRIMARY KEY,
-category_id
+## To start a new scraper, run 
+
+ShopifyAppScraper.new(update_categories: true/false, scrape_reviews: true/false)
+
+- Since Shopify app marketplace doesn't update categories so often, you can choose not to update the category data in your database. Your database will use the most up-to-date category information to start.
+
+- Since reviews have a lot of content, you can opt out of review scraping to save time.
+
+## #fetch_categories
+
+The function will fetch categories and subcategories as well as their urls. 
+
+## #fetch_app_listing_urls
+
+The function will traverse each category (NOT subcategory) and find app listings and their urls under those categories
+
+
 
