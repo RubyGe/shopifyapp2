@@ -10,12 +10,15 @@ module AppPageParser
     rescue StandardError => e
       puts "Error: #{e}"
     else
+      key_benefits_headers = ["NULL", "NULL","NULL"] if key_benefits_headers.empty?
+      key_benefits_contents = ["NULL", "NULL","NULL"] if key_benefits_contents.empty?
+      content = "NULL" if content.empty?
       [key_benefits_headers, key_benefits_contents, content]
     end
   end
 
   def parse_support(page)
-    @support_info = {}
+    email = "NULL"
     begin
       support_section = page.xpath("//ul[@class='app-support-list']")
       email = support_section.xpath("//span[contains(text(), '@')]").text.strip
@@ -54,10 +57,9 @@ module AppPageParser
   end
 
   def parse_reviews_summary(page)
-
     begin
       review_section = page.css("div.reviews-summary")
-      review_count = review_section.css("span.reviews-summary__count").text.match(/Based on (.+) reviews/)[1]
+      review_count = review_section.css("span.reviews-summary__count").text.match(/Based on (.+) review.?/)[1]
       review_rating = review_section.css("span.reviews-summary__overall-rating span.ui-star-rating__rating").text.gsub(" of 5 stars", '')
       break_down = review_section.css("ul.reviews-summary__rating-list li.reviews-summary__rating-breakdown")
       review_stars = []

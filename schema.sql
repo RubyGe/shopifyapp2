@@ -14,9 +14,17 @@ CREATE TABLE subcategories(
   updated_at timestamp NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE developers(
+  id serial PRIMARY KEY,
+  name varchar(255),
+  url varchar(255),
+  updated_at timestamp DEFAULT NOW()
+);
+
 CREATE TABLE apps(
   id serial PRIMARY KEY,
   name varchar(255) NOT NULL,
+  detail_scraped boolean NOT NULL DEFAULT false, -- whether the scraper has scrapped the app listing details
   url varchar(255) NOT NULL,
   developer_id int REFERENCES developers(id) ON DELETE CASCADE,
   support_email varchar(255),
@@ -33,7 +41,8 @@ CREATE TABLE review_summary(
   review_count_4_stars int DEFAULT 0,
   review_count_3_stars int DEFAULT 0,
   review_count_2_stars int DEFAULT 0,
-  review_count_1_stars int DEFAULT 0
+  review_count_1_stars int DEFAULT 0,
+  updated_at timestamp DEFAULT NOW()
 );
 
 CREATE TABLE pricing_plans(
@@ -41,7 +50,8 @@ CREATE TABLE pricing_plans(
   app_id int REFERENCES apps(id),
   title varchar(255),
   price varchar(255),
-  bullets text
+  bullets text,
+  updated_at timestamp DEFAULT NOW()
 );
 
 CREATE TABLE descriptions(
@@ -53,13 +63,8 @@ CREATE TABLE descriptions(
   key_benefits_2_content text,
   key_benefits_3_header varchar(255),
   key_benefits_3_content text,
-  content text NOT NULL
-);
-
-CREATE TABLE developers(
-  id serial PRIMARY KEY,
-  name varchar(255),
-  url varchar(255)
+  content text NOT NULL,
+  updated_at timestamp DEFAULT NOW()
 );
 
 CREATE TABLE apps_subcategories(

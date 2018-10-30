@@ -106,13 +106,19 @@ module DatabaseHelpers
   end
 
   def write_developer(app_id, developers)
-    sql = "INSERT INTO developers (name, url) VALUES
-           ($1, $2)"
-    params = [ developers[0], developers[1] ]
-    CONNECTION.exec_params(sql, params)
+    sql = "SELECT id FROM developers WHERE url = '#{developers[1]}' AND name = '#{developers[0]}'"
+    result = CONNECTION.exec sql
 
+    if result.ntuples > 0
+      developer_id = result.values.flatten[0]
+    else
+      sql = "INSERT INTO developers (name, url) VALUES
+             ($1, $2)"
+      params = [ developers[0], developers[1] ]
+      CONNECTION.exec_params(sql, params)
 
-    developer_id = fetch_last_item_id("developers")
+      developer_id = fetch_last_item_id("developers")
+    end
 
     sql = "UPDATE apps SET developer_id = #{developer_id} WHERE id = #{app_id}"
     CONNECTION.exec sql
@@ -125,14 +131,12 @@ module DatabaseHelpers
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
     params = [app_id, reviews_summary[0], reviews_summary[1]] + reviews_summary[2]
     CONNECTION.exec_params(sql, params)
-    
   end
 
   def write_pricing(app_id, pricing)
     sql = "INSERT INTO pricing_plans (app_id, title, price, bullets)
            VALUES ($1, $2, $3, $4)"
     pricing_count = pricing[1].size
-    binding.pry
     (0...pricing_count).each do |idx|
       params = [ app_id, pricing[0][idx], pricing[1][idx], pricing[2][idx] ]
       CONNECTION.exec_params(sql, params)
@@ -144,12 +148,26 @@ module DatabaseHelpers
     CONNECTION.exec sql
   end
 
+  def scraped?(id)
+    sql = "SELECT detail_scraped FROM apps WHERE id = #{id}"
+    result = CONNECTION.exec sql
+    result.values.flatten[0] == 't' ? true : false
+  end
+
+  def mark_scrapped(id)
+    sql = "UPDATE apps SET detail_scraped = true WHERE id = #{id}"
+    CONNECTION.exec sql
+  end
+
   def write_app_details(app_id, descriptions, email, pricing, developer, reviews_summary)
+    # test if the app listing has already been scraped
     write_descriptions(app_id, descriptions)
     write_developer(app_id, developer)
     write_reviews_summary(app_id, reviews_summary)
     write_pricing(app_id, pricing)
     write_support(app_id, email)
+
+    mark_scrapped(app_id)
   end
   
   def get_most_recent_update_timestamp(table_name)
@@ -174,6 +192,7 @@ module DatabaseHelpers
 
   def read_apps
     recent_update_timestamp = get_most_recent_update_timestamp("apps")
+    timestamp = Time.parse(recent_update_timestamp)
     sql = "SELECT id, name, url FROM apps WHERE updated_at = '#{recent_update_timestamp}' ORDER BY id"
     result = CONNECTION.exec sql
     apps = []
@@ -181,7 +200,7 @@ module DatabaseHelpers
     result.each do |app|
       apps << [app["id"], app["name"], app["url"]]
     end
-    apps
+    [apps, timestamp]
   end
 end
 
@@ -280,15 +299,15 @@ class ShopifyAppScraper
     end
   end
 
-
-
   def fetch_app_details
-    counter = 1
     @apps.each do |app|
       app_details = {}
       app_id = app[0]
       app_url = app[2]
       p [app_id, app_url]
+
+      # if the app record details has been scraped, skip the session
+      next if scraped?(app_id)
       begin
         page = Nokogiri::HTML(open(app_url))
       rescue StandardError=>e
@@ -304,19 +323,18 @@ class ShopifyAppScraper
         pause(1)
       end
       write_app_details(app_id, descriptions, email, pricing, developer, reviews_summary)
-      break if counter == 2 # test to-be-deleted
     end
   end
 
   def run
     fetch_categories if @update_categories == true
 
-    # @categories = read_categories
-    # fetch_category_app_urls(@categories)
+    @categories = read_categories
+    fetch_category_app_urls(@categories)
 
-    @apps = read_apps
+    @apps, @timestamp = read_apps
     fetch_app_details
   end
 end
 
-ShopifyAppScraper.new(update_categories: false, scrape_reviews: false).run
+ShopifyAppScraper.new(update_categories: true, scrape_reviews: false).run

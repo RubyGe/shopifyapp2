@@ -25,5 +25,8 @@ The function will fetch categories and subcategories as well as their urls.
 
 The function will traverse each category (NOT subcategory) and find app listings and their urls under those categories
 
+## to-dos
+[ ] Timestamp check for each writing
+
 
 
