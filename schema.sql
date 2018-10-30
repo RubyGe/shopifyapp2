@@ -36,7 +36,7 @@ CREATE TABLE review_summary(
   id serial PRIMARY KEY,
   app_id int REFERENCES apps(id) ON DELETE CASCADE,
   review_count_total int DEFAULT 0,
-  review_ratings int DEFAULT 0 CHECK (review_ratings BETWEEN 0 AND 5),
+  review_ratings numeric (2, 1) DEFAULT 0 CHECK (review_ratings BETWEEN 0 AND 5),
   review_count_5_stars int DEFAULT 0,
   review_count_4_stars int DEFAULT 0,
   review_count_3_stars int DEFAULT 0,
