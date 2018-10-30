@@ -11,6 +11,10 @@ psql shopifyapp2 < schema.sql
 
 ## To start a new scraper, run 
 
+```
+ruby start.rb
+```
+
 ShopifyAppScraper.new(update_categories: true/false, scrape_reviews: true/false)
 
 - Since Shopify app marketplace doesn't update categories so often, you can choose not to update the category data in your database. Your database will use the most up-to-date category information to start.
@@ -26,7 +30,8 @@ The function will fetch categories and subcategories as well as their urls.
 The function will traverse each category (NOT subcategory) and find app listings and their urls under those categories
 
 ## to-dos
-[ ] Timestamp check for each writing
+[ ] Add sub_category tags
+[ ] Add review detail scraping
 
 
 

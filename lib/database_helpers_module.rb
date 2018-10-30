@@ -7,18 +7,24 @@ module DatabaseHelpers
     categories.each do |name, sub_categories|
       category_link = sub_categories.last[:link]
       sub_categories.pop
+      sql = "INSERT INTO categories (name, url, updated_at) VALUES ($1, $2, $3);"
+      # sql = "INSERT INTO categories (name, url, updated_at) VALUES ('#{name}', '#{category_link}', '#{timestamp}');"
+      params = [name, category_link, @timestamp]
+      CONNECTION.exec_params(sql, params)
 
-      sql = "INSERT INTO categories (name, url, updated_at) VALUES ('#{name}', '#{category_link}', '#{timestamp}');"
-      CONNECTION.exec sql
+      sql = "SELECT id FROM categories WHERE name = $1 AND updated_at = $2;"
+      params = [name, @timestamp]
 
-      sql = "SELECT id FROM categories WHERE name = '#{name}' AND updated_at = '#{timestamp}';"
-      category_id = CONNECTION.exec sql
+      category_id = CONNECTION.exec_params(sql, params)
       category_id = category_id.values.flatten[0].to_i
 
       sub_categories.each do |item|
         sql = "INSERT INTO subcategories (category_id, name, url, updated_at) VALUES
                (#{category_id}, '#{item[:name]}', '#{item[:link]}', '#{timestamp}');"
-        CONNECTION.exec sql
+        sql = "INSERT INTO subcategories (category_id, name, url, updated_at) VALUES
+               ($1, $2, $3, $4);"
+        params = [category_id, item[:name], item[:link], @timestap]
+        CONNECTION.exec_params(sql, params)
       end
     end
   end
@@ -87,8 +93,9 @@ module DatabaseHelpers
   end
 
   def write_developer(app_id, developers)
-    sql = "SELECT id FROM developers WHERE url = '#{developers[1]}' AND name = '#{developers[0]}'"
-    result = CONNECTION.exec sql
+    sql = "SELECT id FROM developers WHERE name = $1 AND url = $2"
+    params = [developers[0], developers[1]]
+    result = CONNECTION.exec_params(sql, params)
 
     if result.ntuples > 0
       developer_id = result.values.flatten[0]
@@ -125,8 +132,9 @@ module DatabaseHelpers
   end
 
   def write_support(app_id, email)
-    sql = "UPDATE apps SET support_email = '#{email}' WHERE id = #{app_id}"
-    CONNECTION.exec sql
+    sql = "UPDATE apps SET support_email = $1 WHERE id = $2"
+    params = [email, app_id]
+    CONNECTION.exec_params(sql, params)
   end
 
   def scraped?(id)
