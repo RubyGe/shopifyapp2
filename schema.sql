@@ -26,7 +26,7 @@ CREATE TABLE apps(
   name varchar(255) NOT NULL,
   detail_scraped boolean NOT NULL DEFAULT false, -- whether the scraper has scrapped the app listing details
   url varchar(255) NOT NULL,
-  developer_id int REFERENCES developers(id) ON DELETE CASCADE,
+  developer_id int REFERENCES developers(id),
   support_email varchar(255),
   updated_at timestamp DEFAULT NOW()
 );
@@ -34,7 +34,7 @@ CREATE TABLE apps(
 
 CREATE TABLE review_summary(
   id serial PRIMARY KEY,
-  app_id int REFERENCES apps(id) ON DELETE CASCADE,
+  app_id int REFERENCES apps(id),
   review_count_total int DEFAULT 0,
   review_ratings numeric (2, 1) DEFAULT 0 CHECK (review_ratings BETWEEN 0 AND 5),
   review_count_5_stars int DEFAULT 0,
@@ -56,7 +56,7 @@ CREATE TABLE pricing_plans(
 
 CREATE TABLE descriptions(
   id serial PRIMARY KEY,
-  app_id int REFERENCES apps(id) ON DELETE CASCADE,
+  app_id int REFERENCES apps(id),
   key_benefits_1_header varchar(255),
   key_benefits_1_content text,
   key_benefits_2_header varchar(255),

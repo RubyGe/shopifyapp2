@@ -14,19 +14,20 @@ end
 
 class ShopifyAppScraper
   ROOT_URL = "https://apps.shopify.com"
-  
+
   include DatabaseHelpers
   include ScraperHelpers
   include AppPageParser
 
   attr_accessor :timestamp, :categories, :developers, :apps
 
-  def initialize(options = { update_categories: false, scrape_reviews: false})
+  def initialize(options = { update_categories: false, update_apps: false, scrape_reviews: false})
     @timestamp = Time.now
     @categories = []
     @developers = {}
     @apps = []
     @update_categories = options[:update_categories]
+    @update_apps = options[:update_apps]
     @scrape_reviews = options[:scrape_reviews]
   end
 
@@ -138,9 +139,9 @@ class ShopifyAppScraper
 
   def run
     fetch_categories if @update_categories == true
-
     @categories = read_categories
-    fetch_category_app_urls(@categories)
+
+    fetch_category_app_urls(@categories) if @update_apps == true
 
     @apps, @timestamp = read_apps
     fetch_app_details
