@@ -45,7 +45,7 @@ This method will traverse each category (NOT subcategory) and find app listings 
 
 ## to-dos
 - [ ] Add sub_category tags
-- [ ] Add review detail scraping
+- [ ] Add review detail content scraping
 
 
 
